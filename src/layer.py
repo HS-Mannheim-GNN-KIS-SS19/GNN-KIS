@@ -5,20 +5,20 @@ import numpy as np
 
 
 class Layer:
-    def __init__(self, shape):
-        self.shape = shape
+    def __init__(self, output_shape):
+        self.output_shape = output_shape
         self.input_shape = None
 
     def attach(self, prev_layer):
-        self.input_shape = prev_layer.shape
+        self.input_shape = prev_layer.output_shape
 
     @abc.abstractmethod
     def run(self, input):
         pass
 
-    def assert_shape(self, shape):
-        if shape != self.shape:
-            raise AssertionError("invalid input shape: {} is not the same as {}".format(shape, self.shape))
+    def assert_output_shape(self, shape):
+        if shape != self.output_shape:
+            raise AssertionError("invalid input shape: {} is not the same as {}".format(shape, self.output_shape))
 
     def assert_input_shape(self, shape):
         if shape != self.input_shape:
@@ -36,10 +36,10 @@ class DenseLayer(Layer):
         self.weights = None
 
     def attach(self, prev_layer):
-        if len(prev_layer.shape) != 1:
-            raise AssertionError("Inputlayer width.len has to be 1 was {}".format(prev_layer.shape.ndim))
+        if len(prev_layer.output_shape) != 1:
+            raise AssertionError("Inputlayer width.len has to be 1 was {}".format(prev_layer.output_shape.ndim))
         super(DenseLayer, self).attach(prev_layer)
-        self.weights = np.ones((prev_layer.shape[0], self.shape[0]))
+        self.weights = np.random.randn(self.input_shape[0], self.output_shape[0])
 
     def run(self, input):
         self.assert_input_shape(input.shape)
@@ -59,7 +59,7 @@ class InputLayer(Layer):
         super(InputLayer, self).attach(prev_layer)
 
     def run(self, input):
-        self.assert_shape(input.shape)
+        self.assert_output_shape(input.shape)
         return input
 
 
