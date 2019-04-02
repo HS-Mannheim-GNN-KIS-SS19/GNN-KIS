@@ -1,5 +1,6 @@
 import abc
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -23,6 +24,9 @@ class Layer:
         if shape != self.input_shape:
             raise AssertionError("invalid input shape: {} is not the same as {}".format(shape, self.input_shape))
 
+    def visualize(self):
+        pass
+
 
 class DenseLayer(Layer):
     def __init__(self, shape):
@@ -40,6 +44,11 @@ class DenseLayer(Layer):
     def run(self, input):
         self.assert_input_shape(input.shape)
         return np.dot(input, self.weights)
+
+    def visualize(self):
+        plt.imshow(self.weights, interpolation='nearest')
+        plt.colorbar()
+        plt.show()
 
 
 class InputLayer(Layer):
@@ -72,3 +81,6 @@ class Model:
         for i in range(len(self.layers)):
             curr_state = self.layers[i].run(curr_state)
         return curr_state
+
+    def visualize(self, id):
+        self.layers[id].visualize()
