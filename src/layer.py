@@ -27,6 +27,9 @@ class Layer:
     def visualize(self):
         pass
 
+    def train(self, input, target, learn_rate):
+        raise AssertionError("This layer cannot be trained!")
+
 
 class DenseLayer(Layer):
     def __init__(self, shape, fixed_values=False, weights=None):
@@ -51,6 +54,16 @@ class DenseLayer(Layer):
     def run(self, input):
         self.assert_input_shape(input.shape)
         return sigmoid(np.dot(self.weights, np.append(input, 1)))
+
+    def train(self, input, target, learn_rate):
+        if self.fixed_values:
+            return
+
+        self.assert_input_shape(input.shape)
+        self.assert_output_shape(target.shape)
+
+        sum = np.dot(self.weights, np.append(input, 1))
+        self.weights += -learn_rate * np.append(input, 1) * (sigmoid(sum) - target)  # * sigmoid_derivative(sum)
 
     def visualize(self):
         plt.imshow(self.weights, interpolation='nearest')
@@ -91,6 +104,12 @@ class Model:
 
     def visualize(self, layer_id):
         self.layers[layer_id].visualize()
+
+    def train(self, layer_id, input, target, learn_rate):
+        curr_state = input
+        for i in range(layer_id):
+            curr_state = self.layers[i].run(curr_state)
+        self.layers[layer_id].train(curr_state, target, learn_rate)
 
 
 def sigmoid(x):
