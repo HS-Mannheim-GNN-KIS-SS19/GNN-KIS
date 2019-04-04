@@ -29,21 +29,28 @@ class Layer:
 
 
 class DenseLayer(Layer):
-    def __init__(self, shape):
+    def __init__(self, shape, fixed_values=False, weights=None):
         if len(shape) != 1:
             raise AssertionError("width.len has to be 1 was {}".format(shape.ndim))
         super().__init__(shape)
-        self.weights = None
+        self.fixed_values = fixed_values
+        self.weights = weights
 
     def attach(self, prev_layer):
         if len(prev_layer.output_shape) != 1:
             raise AssertionError("Inputlayer width.len has to be 1 was {}".format(prev_layer.output_shape.ndim))
         super(DenseLayer, self).attach(prev_layer)
-        self.weights = np.random.randn(self.input_shape[0], self.output_shape[0])
+
+        if self.weights is None:
+            self.weights = np.random.randn(self.output_shape[0], self.input_shape[0] + 1)
+        else:
+            if self.weights.shape != (self.output_shape[0], self.input_shape[0] + 1):
+                raise AssertionError("manually set weights are not correctly sized: {} instead of required {}"
+                                     .format(self.weights.shape, (self.output_shape[0], self.input_shape[0] + 1)))
 
     def run(self, input):
         self.assert_input_shape(input.shape)
-        return np.dot(input, self.weights)
+        return sigmoid(np.dot(self.weights, np.append(input, 1)))
 
     def visualize(self):
         plt.imshow(self.weights, interpolation='nearest')
@@ -82,5 +89,14 @@ class Model:
             curr_state = self.layers[i].run(curr_state)
         return curr_state
 
-    def visualize(self, id):
-        self.layers[id].visualize()
+    def visualize(self, layer_id):
+        self.layers[layer_id].visualize()
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x / 8.))
+
+
+def sigmoid_derivative(x):
+    sig = sigmoid(x)
+    return sig * (1 - sig)
