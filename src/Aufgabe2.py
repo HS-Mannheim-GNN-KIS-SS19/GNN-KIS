@@ -33,6 +33,18 @@ def generateXYDataset(function, min, max, step):
     return np.hstack(hstack)
 
 
+def showColorMap(min, max, step):
+    # calc array
+    out = generateXYDataset(model.run, min, max, step)
+    # out = generateXYDataset(lambda xy: 0.8 if sqrt(xy[0] * xy[0] + xy[1] * xy[1]) < 1 else 0, -5, 5, 0.1)
+
+    # plt
+    plt.pcolor(np.arange(min, max, step), np.arange(min, max, step), out)
+    # plt.imshow(out, interpolation='bilinear')
+    plt.colorbar()
+    plt.show()
+
+
 while (True):
     # model.visualize(2)
 
@@ -41,13 +53,6 @@ while (True):
         for y in np.arange(-2, 2, 0.05):
             model.train(2, np.array([x, y]), np.array([0 if sqrt(x * x + y * y) < 1 else 0.8]), 0.01)
 
-    # calc array
-    out = generateXYDataset(model.run, -5, 5, 0.1)
-    # out = generateXYDataset(lambda xy: 0.8 if sqrt(xy[0] * xy[0] + xy[1] * xy[1]) < 1 else 0, -5, 5, 0.1)
-
-    # plt
-    plt.imshow(out, interpolation='bilinear')
-    plt.colorbar()
-    plt.show()
+    showColorMap(-5, 5, 0.1)
 
     sleep(0.25)
