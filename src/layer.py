@@ -3,6 +3,8 @@ import abc
 import matplotlib.pyplot as plt
 import numpy as np
 
+from src.functions import sigmoid, sigmoid_derivative
+
 
 class Layer:
     def __init__(self, output_shape):
@@ -32,12 +34,14 @@ class Layer:
 
 
 class DenseLayer(Layer):
-    def __init__(self, shape, fixed_values=False, weights=None):
+    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False, weights=None):
         if len(shape) != 1:
             raise AssertionError("width.len has to be 1 was {}".format(shape.ndim))
         super().__init__(shape)
         self.fixed_values = fixed_values
         self.weights = weights
+        self.function = function
+        self.function_derivative = function_derivative
 
     def attach(self, prev_layer):
         if len(prev_layer.output_shape) != 1:
@@ -53,7 +57,7 @@ class DenseLayer(Layer):
 
     def run(self, input):
         self.assert_input_shape(input.shape)
-        return sigmoid(np.dot(self.weights, np.append(input, 1)))
+        return self.function(np.dot(self.weights, np.append(input, 1)))
 
     def train(self, input, target, learn_rate):
         if self.fixed_values:
@@ -63,7 +67,7 @@ class DenseLayer(Layer):
         self.assert_output_shape(target.shape)
 
         sum = np.dot(self.weights, np.append(input, 1))
-        self.weights += -learn_rate * np.append(input, 1) * (sigmoid(sum) - target)  # * sigmoid_derivative(sum)
+        self.weights += -learn_rate * np.append(input, 1) * (self.function(sum) - target)  # * self.function_derivative(sum)
 
     def visualize(self):
         plt.imshow(self.weights, interpolation='nearest')
@@ -110,12 +114,3 @@ class Model:
         for i in range(layer_id):
             curr_state = self.layers[i].run(curr_state)
         self.layers[layer_id].train(curr_state, target, learn_rate)
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x / 8.))
-
-
-def sigmoid_derivative(x):
-    sig = sigmoid(x)
-    return sig * (1 - sig)
