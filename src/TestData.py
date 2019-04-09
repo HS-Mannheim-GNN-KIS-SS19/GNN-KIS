@@ -6,7 +6,7 @@ def read_matrix_from_file(path):
 
 
 def random_matrix(width, height):
-    return np.random.randn(width, height)
+    return np.random.randn(height, width)
 
 
 print(read_matrix_from_file("Test.txt"))

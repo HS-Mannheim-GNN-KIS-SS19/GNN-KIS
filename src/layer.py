@@ -3,6 +3,8 @@ import abc
 import matplotlib.pyplot as plt
 import numpy as np
 
+from src.functions import sigmoid, sigmoid_derivative
+
 
 class Layer:
     def __init__(self, output_shape):
@@ -27,17 +29,22 @@ class Layer:
     def visualize(self):
         pass
 
-    def train(self, input, target, learn_rate):
+    def delta_learning(self, input, target, learn_rate):
+        raise AssertionError("This layer cannot be trained!")
+
+    def backpropagation(self, layers, o, ek, target, learn_rate):
         raise AssertionError("This layer cannot be trained!")
 
 
 class DenseLayer(Layer):
-    def __init__(self, shape, fixed_values=False, weights=None):
+    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False, weights=None):
         if len(shape) != 1:
             raise AssertionError("width.len has to be 1 was {}".format(shape.ndim))
         super().__init__(shape)
         self.fixed_values = fixed_values
         self.weights = weights
+        self.function = function
+        self.function_derivative = function_derivative
 
     def attach(self, prev_layer):
         if len(prev_layer.output_shape) != 1:
@@ -53,9 +60,9 @@ class DenseLayer(Layer):
 
     def run(self, input):
         self.assert_input_shape(input.shape)
-        return sigmoid(np.dot(self.weights, np.append(input, 1)))
+        return self.function(np.dot(self.weights, np.append(input, 1)))
 
-    def train(self, input, target, learn_rate):
+    def delta_learning(self, input, target, learn_rate):
         if self.fixed_values:
             return
 
@@ -63,7 +70,26 @@ class DenseLayer(Layer):
         self.assert_output_shape(target.shape)
 
         sum = np.dot(self.weights, np.append(input, 1))
-        self.weights += -learn_rate * np.append(input, 1) * (sigmoid(sum) - target)  # * sigmoid_derivative(sum)
+        self.weights += -learn_rate * np.append(input, 1) * (self.function(sum) - target)  # * self.function_derivative(sum)
+        # print(self.weights)
+
+    def backpropagation(self, layers, o, ek, target, learn_rate):
+        if self.function != sigmoid:
+            raise AssertionError("backpropagation only works with sigmoid function! Not {}".format(self.function))
+        oj = np.take(o, 0)
+        o = np.delete(o, 0)
+        oi = np.append(o[0], 1)
+        if ek is None:
+            # Backpropagation output layer
+            ej = (oj - target) * oj * (1 - oj)
+            self.weights += -learn_rate * ej * oi
+        else:
+            # Backpropagation hidden layers
+            # there my be still some mistake in the following to lines!
+            ej = ek * layers[len(o) + 1].weights[:, :-1] * oj * (1 - oj)
+            self.weights += (-learn_rate) * np.transpose(ej) * oi
+        if len(o) != 1:
+            layers[len(o) - 1].backpropagation(layers, o, ej, target, learn_rate)
 
     def visualize(self):
         plt.imshow(self.weights, interpolation='nearest')
@@ -105,17 +131,16 @@ class Model:
     def visualize(self, layer_id):
         self.layers[layer_id].visualize()
 
-    def train(self, layer_id, input, target, learn_rate):
+    def delta_learning(self, layer_id, input, target, learn_rate):
         curr_state = input
         for i in range(layer_id):
             curr_state = self.layers[i].run(curr_state)
-        self.layers[layer_id].train(curr_state, target, learn_rate)
+        self.layers[layer_id].delta_learning(curr_state, target, learn_rate)
 
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x / 8.))
-
-
-def sigmoid_derivative(x):
-    sig = sigmoid(x)
-    return sig * (1 - sig)
+    def backpropagation(self, input, target, learn_rate):
+        cur = input
+        output = []
+        for layer in self.layers:
+            output.insert(0, layer.run(cur))
+            cur = output[0]
+        self.layers[- 1].backpropagation(self.layers, np.array(output), None, target, learn_rate)
