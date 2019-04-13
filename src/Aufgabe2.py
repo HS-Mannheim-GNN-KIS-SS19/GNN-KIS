@@ -4,26 +4,16 @@ from math import sqrt
 
 from src.GraphUtils import showColorMap
 
+
 model = layer.Model([
     layer.InputLayer((2,)),
-    layer.DenseLayer((4,),
-                     # fixed_values=True,
-                     # weights=np.array([
-                     #     [25.0, 0.0, 25.0],
-                     #     [-25.0, 0.0, 25.0],
-                     #     [0.0, 25.0, 25.0],
-                     #     [0.0, -25.0, 25.0],
-                     # ])
-                     ),
-    layer.DenseLayer((1,),
-                     # fixed_values=True,
-                     # weights=np.array([[25, 25, 25, 25, -200]], dtype='float64')
-                     )
+    layer.DenseLayer((4,)),
+    layer.DenseLayer((1,))
 ])
 
 
 def delta_learning():
-    while (True):
+    while True:
         # model.visualize(2)
         showColorMap(model, -2, 2, 0.05)
 
@@ -34,14 +24,19 @@ def delta_learning():
 
 
 def backpropagation(i):
-    while (True):
-        # model.visualize(2)
-        showColorMap(model, -2, 2, 0.05)
+    count = 0
+    while True:
+        if count == i:
+            # model.visualize(2)
+            showColorMap(model, -2, 2, 0.05)
+            count = 0
 
         # train
         for x in np.arange(-2, 2, 0.05):
             for y in np.arange(-2, 2, 0.05):
                 model.backpropagation(np.array([x, y]), np.array([0.8 if sqrt(x * x + y * y) < 1 else 0]), 0.05)
 
+        count += 1
 
-backpropagation(0)
+
+backpropagation(8)
