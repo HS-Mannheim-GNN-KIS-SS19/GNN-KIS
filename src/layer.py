@@ -8,6 +8,7 @@ from src.functions import sigmoid, sigmoid_derivative
 # TODO for testing:
 np.random.seed(123)
 
+
 class Layer:
     def __init__(self, output_shape):
         self.output_shape = output_shape
@@ -62,6 +63,7 @@ class DenseLayer(Layer):
 
     def run(self, input):
         self.assert_input_shape(input.shape)
+        #ss= self.function(np.dot(self.weights, np.append(input, 1)))
         return self.function(np.dot(self.weights, np.append(input, 1)))
 
     def delta_learning(self, input, target, learn_rate):
@@ -90,12 +92,13 @@ class DenseLayer(Layer):
         if ek is None:
             # Backpropagation output layer
             ej = (oj - target) * oj * (1 - oj)
-            self.weights += -learn_rate * np.transpose(ej) * oi
+            self.weights += -learn_rate * np.mat(ej).T * oi
+
         else:
             # Backpropagation hidden layers
             # weights[:, :-1] deletes the last value/vector of the array/matrix (weight of bias neuron not needed here)
-            ej = ek * layers[len(o) + 1].weights[:, :-1] * oj * (1 - oj)
-            self.weights += -learn_rate * np.transpose(ej) * oi
+            ej = np.mat(ek) * (layers[len(o) + 1].weights[:, :-1] * oj * (1 - oj))
+            self.weights += -learn_rate * ej.T * oi
 
         # Until it reached the input layer
         if len(o) > 1:
@@ -147,10 +150,12 @@ class Model:
             curr_state = self.layers[i].run(curr_state)
         self.layers[layer_id].delta_learning(curr_state, target, learn_rate)
 
-    def backpropagation(self, input, target, learn_rate):
+    def backpropagation(self, input, target, learn_rate, return_output=False):
         cur = input
         output = []
         for layer in self.layers:
             output.insert(0, layer.run(cur))
             cur = output[0]
         self.layers[-1].backpropagation(self.layers, np.array(output), None, target, learn_rate)
+        if return_output:
+            return np.array(output)[0]

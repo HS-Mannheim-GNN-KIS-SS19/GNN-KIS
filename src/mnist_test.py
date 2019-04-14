@@ -1,31 +1,29 @@
 import layer
 import numpy as np
-from src.GraphUtils import showColorMap
+import matplotlib.pyplot as plt
 
 model = layer.Model([
     layer.InputLayer((784,)),  # 28 x 28 images
     layer.DenseLayer((512,)),
     layer.DenseLayer((256,)),
     layer.DenseLayer((128,)),
-    layer.DenseLayer((10,))
+    layer.DenseLayer((10,))    # Outputs numbers from 0 - 9
 ])
 
 
-def backpropagation(i):
-    count = 0
-    while True:
-        if count == i:
-            # model.visualize(2)
+def visualize(input_val, target_number, output):
+    # Plot the original 28 x 28 image
+    plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(input_val).reshape((28, 28))))
+    plt.colorbar()
+    plt.show()
 
-            count = 0
+    # Print each output neuron
+    for i, o in enumerate(output):
+        print("{}    {:1.6f}".format(i, o))
 
-        # train
-        for x in np.arange(-2, 2, 0.05):
-            for y in np.arange(-2, 2, 0.05):
-                pass
+    print("Predicted:  {}   Result:  {}".format(output.tolist().index(max(output)), target_number))
+    print("--------------")
 
-
-        count += 1
 
 def number_recognize(draw_each_i):
     from mlxtend.data import loadlocal_mnist
@@ -41,13 +39,19 @@ def number_recognize(draw_each_i):
 
     count = 0
     for input_val, target in zip(all_x, all_y):
-        model.backpropagation(input_val, target, 0.05)
+        # very important!
+        # target must not be the correct number but instead
+        # a vector with the height of the output layer where only the correct index is 1 (rest 0)
+        target_vec = np.zeros((10, ))
+        target_vec[target] = 1
 
         if count % draw_each_i == 0:
-            showColorMap(model, 0, 9, 0.05)
+            output = model.backpropagation(input_val, target_vec, 0.05, return_output=True)
+            visualize(input_val, target, output)
+        else:
+            model.backpropagation(input_val, target_vec, 0.05)
+
         count += 1
 
-a = np.array([1,2,1])
-b = np.array([2,2,3])
-print(np.dot(a,b))
-number_recognize(800)
+
+number_recognize(5000)
