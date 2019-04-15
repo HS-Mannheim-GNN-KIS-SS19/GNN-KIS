@@ -38,20 +38,32 @@ def number_recognize(draw_each_i):
     print('Class distribution: %s' % np.bincount(all_y))
 
     count = 0
+    right, wrong = 0, 0
     for input_val, target in zip(all_x, all_y):
         # very important!
         # target must not be the correct number but instead
         # a vector with the height of the output layer where only the correct index is 1 (rest 0)
-        target_vec = np.zeros((10, ))
+        target_vec = np.zeros((10,))
         target_vec[target] = 1
 
         if count % draw_each_i == 0:
             output = model.backpropagation(input_val, target_vec, 0.05, return_output=True)
             visualize(input_val, target, output)
+            model.save_to_file("save")
+            model.restore_from_file("save")
         else:
-            model.backpropagation(input_val, target_vec, 0.05)
+            output = model.backpropagation(input_val, target_vec, 0.05, return_output=True)
+
+        if count > 45000:
+            if output.tolist().index(max(output)) == target:
+                right += 1
+            else:
+                wrong += 1
+
+            if right+wrong % 150 == 0:
+                print("recognized {}% correctly".format(right/(count-45000)))
 
         count += 1
 
 
-number_recognize(5000)
+number_recognize(1000)

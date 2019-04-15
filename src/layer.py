@@ -144,6 +144,15 @@ class Model:
     def visualize(self, layer_id):
         self.layers[layer_id].visualize()
 
+    def save_to_file(self, filename_prefix):
+        for i, layer in enumerate(self.layers):
+            if isinstance(layer, DenseLayer):
+                np.savetxt(filename_prefix + str(i) + '.gz', layer.weights)
+
+    def restore_from_file(self, filename_prefix):
+        for i in range(1, len(self.layers)):
+            self.layers[i].weights = np.loadtxt(filename_prefix + str(i) + '.gz')
+
     def delta_learning(self, layer_id, input, target, learn_rate):
         curr_state = input
         for i in range(layer_id):
