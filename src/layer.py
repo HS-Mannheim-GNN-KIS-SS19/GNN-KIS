@@ -5,7 +5,7 @@ import numpy as np
 
 from src.functions import sigmoid, sigmoid_derivative
 
-# TODO for testing:
+# TODO, just for testing
 np.random.seed(123)
 
 
@@ -63,7 +63,6 @@ class DenseLayer(Layer):
 
     def run(self, input):
         self.assert_input_shape(input.shape)
-        #ss= self.function(np.dot(self.weights, np.append(input, 1)))
         return self.function(np.dot(self.weights, np.append(input, 1)))
 
     def delta_learning(self, input, target, learn_rate):
@@ -147,11 +146,12 @@ class Model:
     def save_to_file(self, filename_prefix):
         for i, layer in enumerate(self.layers):
             if isinstance(layer, DenseLayer):
-                np.savetxt(filename_prefix + str(i) + '.gz', layer.weights)
+                np.savetxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz', layer.weights)
 
     def restore_from_file(self, filename_prefix):
+        # starts at 1 because layer 0 is the input layer which has no weights
         for i in range(1, len(self.layers)):
-            self.layers[i].weights = np.loadtxt(filename_prefix + str(i) + '.gz')
+            self.layers[i].weights = np.loadtxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz')
 
     def delta_learning(self, layer_id, input, target, learn_rate):
         curr_state = input

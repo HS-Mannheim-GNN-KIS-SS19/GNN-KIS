@@ -49,18 +49,17 @@ def number_recognize(draw_each_i):
         if count % draw_each_i == 0:
             output = model.backpropagation(input_val, target_vec, 0.05, return_output=True)
             visualize(input_val, target, output)
-            model.save_to_file("save")
-            model.restore_from_file("save")
         else:
             output = model.backpropagation(input_val, target_vec, 0.05, return_output=True)
 
+        # lines below are just for testing
         if count > 45000:
             if output.tolist().index(max(output)) == target:
                 right += 1
             else:
                 wrong += 1
 
-            if right+wrong % 150 == 0:
+            if right + wrong % 150 == 0:
                 print("recognized {}% correctly".format(right/(count-45000)))
 
         count += 1
