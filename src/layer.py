@@ -5,6 +5,9 @@ import numpy as np
 
 from src.functions import sigmoid, sigmoid_derivative
 
+# has to be at least 1
+RANDOM_WEIGHTS_STRETCH = 1
+
 
 class Layer:
     def __init__(self, output_shape):
@@ -35,9 +38,13 @@ class Layer:
     def backpropagation(self, layers, o, ek, target, learn_rate):
         raise AssertionError("This layer cannot be trained!")
 
+    def gibbs_sampling(self, v0, learn_rate):
+        raise AssertionError("This layer cannot be trained!")
+
 
 class DenseLayer(Layer):
-    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False, weights=None):
+    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False,
+                 weights=None):
         if len(shape) != 1:
             raise AssertionError("width.len has to be 1 was {}".format(shape.ndim))
         super().__init__(shape)
@@ -52,7 +59,7 @@ class DenseLayer(Layer):
         super(DenseLayer, self).attach(prev_layer)
 
         if self.weights is None:
-            self.weights = np.random.randn(self.output_shape[0], self.input_shape[0] + 1)
+            self.weights = RANDOM_WEIGHTS_STRETCH * (np.random.randn(self.output_shape[0], self.input_shape[0] + 1))
         else:
             if self.weights.shape != (self.output_shape[0], self.input_shape[0] + 1):
                 raise AssertionError("manually set weights are not correctly sized: {} instead of required {}"
@@ -70,8 +77,10 @@ class DenseLayer(Layer):
         self.assert_output_shape(target.shape)
 
         sum = np.dot(self.weights, np.append(input, 1))
-        self.weights += -learn_rate * np.append(input, 1) * (self.function(sum) - target)  # * self.function_derivative(sum)
-        # print(self.weights)
+        self.weights += -learn_rate * np.append(input, 1) * (
+                self.function(sum) - target)  # * self.function_derivative(sum)
+
+    # print(self.weights)
 
     def backpropagation(self, layers, o, ek, target, learn_rate):
         if self.function != sigmoid:
@@ -80,7 +89,7 @@ class DenseLayer(Layer):
         # output vector of current layer
         oj = np.take(o, 0)
         # output matrix of all neurons
-        o = np.delete(o, 0)
+        o = o[1::]
         # oi are always the inputs with added bias neuron
         oi = np.append(o[0], 1)
 
@@ -89,7 +98,6 @@ class DenseLayer(Layer):
             # Backpropagation output layer
             ej = (oj - target) * oj * (1 - oj)
             self.weights += -learn_rate * np.mat(ej).T * oi
-
         else:
             # Backpropagation hidden layers
             # weights[:, :-1] deletes the last value/vector of the array/matrix (weight of bias neuron not needed here)
@@ -100,10 +108,17 @@ class DenseLayer(Layer):
         if len(o) > 1:
             layers[len(o) - 1].backpropagation(layers, o, ej, target, learn_rate)
 
+    # FIXME
     def gibbs_sampling(self, v0, learn_rate):
         h = self.run(v0)
-        v1 = self.run(h)
-        self.weights += learn_rate * (v0 - v1) * h
+        v1 = np.dot(self.weights, np.append(h, 1))
+        # debug
+        # print(v0.shape)
+        # print(h.shape)
+        # print(v1.shape)
+        # print(self.weights.shape)
+        self.weights += learn_rate * (v0 - v1) * np.append(h, 1)
+        return v1
 
     def visualize(self):
         plt.imshow(self.weights, interpolation='nearest')
@@ -145,15 +160,15 @@ class Model:
     def visualize(self, layer_id):
         self.layers[layer_id].visualize()
 
-    def save_to_file(self, filename_prefix):
-        for i, layer in enumerate(self.layers):
-            if isinstance(layer, DenseLayer):
-                np.savetxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz', layer.weights)
+        def save_to_file(self, filename_prefix):
+            for i, layer in enumerate(self.layers):
+                if isinstance(layer, DenseLayer):
+                    np.savetxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz', layer.weights)
 
-    def restore_from_file(self, filename_prefix):
-        # starts at 1 because layer 0 is the input layer which has no weights
-        for i in range(1, len(self.layers)):
-            self.layers[i].weights = np.loadtxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz')
+        def restore_from_file(self, filename_prefix):
+            # starts at 1 because layer 0 is the input layer which has no weights
+            for i in range(1, len(self.layers)):
+                self.layers[i].weights = np.loadtxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz')
 
     def delta_learning(self, layer_id, input, target, learn_rate):
         curr_state = input
@@ -170,5 +185,8 @@ class Model:
         self.layers[- 1].backpropagation(self.layers, np.array(output), None, target, learn_rate)
         return np.array(output)[0]
 
-    def gibbs_sampling(self, index, input, learnrate):
-        self.layers[index].gibbs_sampling(input, learnrate)
+    def gibbs_sampling(self, layer_index, input, learnrate, sampling_amount):
+        output = []
+        for _ in range(sampling_amount):
+            output = self.layers[layer_index].gibbs_sampling(input, learnrate)
+        return np.array(output)
