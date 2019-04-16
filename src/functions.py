@@ -2,6 +2,7 @@ import numpy as np
 from scipy.special import expit
 import random
 
+
 def sigmoid(x):
     return expit(x)
 

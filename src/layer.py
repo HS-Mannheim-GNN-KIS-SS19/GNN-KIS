@@ -117,7 +117,7 @@ class DenseLayer(Layer):
         # print(h.shape)
         # print(v1.shape)
         # print(self.weights.shape)
-        self.weights += learn_rate * (v0 - v1) * np.append(h, 1)
+        self.weights += learn_rate * np.append((v0 - v1), 1) * np.append(h, 1)
         return v1
 
     def visualize(self):
