@@ -76,19 +76,28 @@ class DenseLayer(Layer):
     def backpropagation(self, layers, o, ek, target, learn_rate):
         if self.function != sigmoid:
             raise AssertionError("backpropagation only works with sigmoid function! Not {}".format(self.function))
+
+        # output vector of current layer
         oj = np.take(o, 0)
+        # output matrix of all neurons
         o = np.delete(o, 0)
+        # oi are always the inputs with added bias neuron
         oi = np.append(o[0], 1)
+
+        # "each layer owns the weights of its inputs"
         if ek is None:
             # Backpropagation output layer
             ej = (oj - target) * oj * (1 - oj)
-            self.weights += -learn_rate * ej * oi
+            self.weights += -learn_rate * np.mat(ej).T * oi
+
         else:
             # Backpropagation hidden layers
-            # there my be still some mistake in the following to lines!
-            ej = ek * layers[len(o) + 1].weights[:, :-1] * oj * (1 - oj)
-            self.weights += (-learn_rate) * np.transpose(ej) * oi
-        if len(o) != 1:
+            # weights[:, :-1] deletes the last value/vector of the array/matrix (weight of bias neuron not needed here)
+            ej = np.mat(ek) * (layers[len(o) + 1].weights[:, :-1] * oj * (1 - oj))
+            self.weights += -learn_rate * ej.T * oi
+
+        # Until it reached the input layer
+        if len(o) > 1:
             layers[len(o) - 1].backpropagation(layers, o, ej, target, learn_rate)
 
     def visualize(self):
@@ -144,3 +153,4 @@ class Model:
             output.insert(0, layer.run(cur))
             cur = output[0]
         self.layers[- 1].backpropagation(self.layers, np.array(output), None, target, learn_rate)
+        return np.array(output)[0]
