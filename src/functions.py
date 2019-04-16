@@ -1,13 +1,21 @@
 import numpy as np
-
+from scipy.special import expit
+import random
 
 def sigmoid(x):
-    return 1 / (1 + np.exp(-x / 8.))
+    return expit(x)
 
 
 def sigmoid_derivative(x):
     sig = sigmoid(x)
     return sig * (1 - sig)
+
+
+def stochastic(x):
+    if random.random() < x:
+        return 1
+    else:
+        return 0
 
 
 relu = np.vectorize(lambda x: x if x > 0 else 0)
