@@ -168,3 +168,4 @@ class Model:
         self.layers[-1].backpropagation(self.layers, np.array(output), None, target, learn_rate)
         if return_output:
             return np.array(output)[0]
+
