@@ -47,10 +47,10 @@ def number_recognize(draw_each_i):
         target_vec[target] = 1
 
         if count % draw_each_i == 0:
-            output = model.backpropagation(input_val, target_vec, 0.05)
+            output = model.backpropagation(input_val, target_vec, 0.05, return_output=True)
         #  visualize(input_val, target, output)
         else:
-            output = model.backpropagation(input_val, target_vec, 0.05)
+            output = model.backpropagation(input_val, target_vec, 0.05, return_output=True)
 
         # lines below are just for testing
         if count > 20000:
