@@ -8,6 +8,9 @@ from src.functions import sigmoid, sigmoid_derivative
 # has to be at least 1
 RANDOM_WEIGHTS_STRETCH = 1
 
+# TODO remove later
+np.random.seed(123)
+
 
 class Layer:
     def __init__(self, output_shape):
@@ -79,8 +82,6 @@ class DenseLayer(Layer):
         sum = np.dot(self.weights, np.append(input, 1))
         self.weights += -learn_rate * np.append(input, 1) * (
                 self.function(sum) - target)  # * self.function_derivative(sum)
-
-    # print(self.weights)
 
     def backpropagation(self, layers, o, ek, target, learn_rate):
         if self.function != sigmoid:
