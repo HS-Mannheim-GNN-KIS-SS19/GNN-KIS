@@ -112,13 +112,17 @@ class DenseLayer(Layer):
     # FIXME
     def gibbs_sampling(self, v0, learn_rate):
         h = self.run(v0)
-        v1 = np.dot(self.weights, np.append(h, 1))
-        # debug
-        # print(v0.shape)
-        # print(h.shape)
-        # print(v1.shape)
-        # print(self.weights.shape)
-        self.weights += learn_rate * np.append((v0 - v1), 1) * np.append(h, 1)
+        v1 = np.dot(h, self.weights)
+
+        # Zum debuggen. Mit den 3 Zeilen wird dann immer das rekonstruierte Bild ausgegeben.
+        # pic = v0[:-10]
+        # plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(pic).reshape((28, 28))))
+        # plt.show()
+
+        v0 = np.append(v0, 1)
+        delta = learn_rate * np.mat(h).T * np.mat(v0 - v1)
+        self.weights += delta
+
         return v1
 
     def visualize(self):
@@ -161,15 +165,15 @@ class Model:
     def visualize(self, layer_id):
         self.layers[layer_id].visualize()
 
-        def save_to_file(self, filename_prefix):
-            for i, layer in enumerate(self.layers):
-                if isinstance(layer, DenseLayer):
-                    np.savetxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz', layer.weights)
+    def save_to_file(self, filename_prefix):
+        for i, layer in enumerate(self.layers):
+            if isinstance(layer, DenseLayer):
+                np.savetxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz', layer.weights)
 
-        def restore_from_file(self, filename_prefix):
-            # starts at 1 because layer 0 is the input layer which has no weights
-            for i in range(1, len(self.layers)):
-                self.layers[i].weights = np.loadtxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz')
+    def restore_from_file(self, filename_prefix):
+        # starts at 1 because layer 0 is the input layer which has no weights
+        for i in range(1, len(self.layers)):
+            self.layers[i].weights = np.loadtxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz')
 
     def delta_learning(self, layer_id, input, target, learn_rate):
         curr_state = input

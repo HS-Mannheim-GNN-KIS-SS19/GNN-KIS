@@ -8,7 +8,7 @@ NUMBER_NEURONS = 10
 LEARN_RATE = 0.05
 SAMPLING_AMOUNT = 1
 
-VISUALIZE_PROGRESS_EACH_I = 100 * 20
+VISUALIZE_PROGRESS_EACH_I = 100
 
 model = layer.Model([
     layer.InputLayer((PICTURE_SIZE + NUMBER_NEURONS,)),
@@ -63,6 +63,7 @@ def run_restricted_boltzmann_machine():
             visualize(image, image_corresponding_number, output, right, count)
 
         output_numbers = output[PICTURE_SIZE:PICTURE_SIZE + NUMBER_NEURONS]
+
         if output_numbers.tolist().index(max(output_numbers)) == image_corresponding_number:
             right += 1
 
