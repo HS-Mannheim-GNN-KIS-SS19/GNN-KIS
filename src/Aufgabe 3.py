@@ -1,6 +1,7 @@
 import layer
 import matplotlib.pyplot as plt
 import numpy as np
+from src.functions import *
 
 PICTURE_SIZE = 28 * 28
 NUMBER_NEURONS = 10
@@ -8,11 +9,11 @@ NUMBER_NEURONS = 10
 LEARN_RATE = 0.05
 SAMPLING_AMOUNT = 1
 
-VISUALIZE_PROGRESS_EACH_I = 100
+VISUALIZE_PROGRESS_EACH_I = 300
 
 model = layer.Model([
     layer.InputLayer((PICTURE_SIZE + NUMBER_NEURONS,)),
-    layer.DenseLayer((PICTURE_SIZE + NUMBER_NEURONS,)),
+    layer.DenseLayer((PICTURE_SIZE + NUMBER_NEURONS,), function=stochastic),
 ])
 
 
@@ -23,6 +24,10 @@ def visualize(original_image, target_number, output, right_amount, count):
     pic = output[:PICTURE_SIZE]
     # only the 10 extra neurons
     predicted = output[PICTURE_SIZE:PICTURE_SIZE + NUMBER_NEURONS]
+
+    plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(original_image).reshape((28, 28))))
+    plt.colorbar()
+    plt.show()
 
     plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(pic).reshape((28, 28))))
     plt.colorbar()
@@ -50,7 +55,10 @@ def run_restricted_boltzmann_machine():
     right = 0
     for image, image_corresponding_number in zip(images, corresponding_numbers):
         target_vec = np.zeros((10,))
-        target_vec[image_corresponding_number] = 255
+        target_vec[image_corresponding_number] = 1
+        for i in range(len(image)):
+            if image[i] > 0:
+                image[i] = 1
 
         # Doesn't do the trick here... what a surprise. Still wanted to see what happens in Backpropagation xD
         # output = model.backpropagation(np.append(image, np.zeros((10,))), np.append(image, target_vec), 0.01)

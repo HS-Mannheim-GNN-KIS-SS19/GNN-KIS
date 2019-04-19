@@ -112,15 +112,18 @@ class DenseLayer(Layer):
     # FIXME
     def gibbs_sampling(self, v0, learn_rate):
         h = self.run(v0)
-        v1 = np.dot(h, self.weights)
+        v1 = self.function(np.dot(self.weights, np.append(h, 1)))
 
-        # Zum debuggen. Mit den 3 Zeilen wird dann immer das rekonstruierte Bild ausgegeben.
-        # pic = v0[:-10]
-        # plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(pic).reshape((28, 28))))
-        # plt.show()
-
+        # Zum debuggen. Mit den 3 Zeilen wird dann immer das originale Bild nochmal ausgegeben.
+        """
+        pic = v0[:-10]
+        plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(pic).reshape((28, 28))))
+        plt.show()
+        """
+        v1 = np.append(v1, 1)
         v0 = np.append(v0, 1)
-        delta = learn_rate * np.mat(h).T * np.mat(v0 - v1)
+
+        delta = learn_rate * (np.mat(h).T * np.mat(v0) - np.mat(h).T * np.mat(v1))
         self.weights += delta
 
         return v1

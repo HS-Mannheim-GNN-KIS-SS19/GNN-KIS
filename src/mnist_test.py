@@ -53,15 +53,15 @@ def number_recognize(draw_each_i):
             output = model.backpropagation(input_val, target_vec, 0.05)
 
         # lines below are just for testing
-        if count > 20000:
+        if count > 5000:
             if output.tolist().index(max(output)) == target:
                 right += 1
             else:
                 wrong += 1
 
             if (right + wrong) % 150 == 0:
-                print("recognized {}% correctly".format(right / (count - 20000)))
+                print("recognized {}% correctly".format(right / (count - 5000)))
         count += 1
 
 
-number_recognize(10000)
+number_recognize(5000)
