@@ -13,10 +13,14 @@ def sigmoid_derivative(x):
 
 
 def stochastic(x):
-    if random.random() < x:
-        return 1
-    else:
-        return 0
+    x = sigmoid(x)
+    for i in range(len(x)):
+        if random.random() < x[i]:
+            x[i] = 1
+        else:
+            x[i] = 0
+
+    return x
 
 
 relu = np.vectorize(lambda x: x if x > 0 else 0)
