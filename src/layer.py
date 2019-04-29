@@ -1,9 +1,7 @@
 import abc
-
 import matplotlib.pyplot as plt
 import numpy as np
-
-from src.functions import sigmoid, sigmoid_derivative
+from src.functions import *
 
 # has to be at least 1
 RANDOM_WEIGHTS_STRETCH = 1
@@ -112,19 +110,28 @@ class DenseLayer(Layer):
     # FIXME
     def gibbs_sampling(self, v0, learn_rate):
         h = self.run(v0)
-        v1 = self.function(np.dot(self.weights, np.append(h, 1)))
+        v1 = self.function(np.dot(self.weights.T, h))
 
         # Zum debuggen. Mit den 3 Zeilen wird dann immer das originale Bild nochmal ausgegeben.
-        """
-        pic = v0[:-10]
-        plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(pic).reshape((28, 28))))
-        plt.show()
-        """
-        v1 = np.append(v1, 1)
-        v0 = np.append(v0, 1)
+        # pic = v0[:-10]
+        # plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(pic).reshape((28, 28))))
+        # plt.show()
 
-        delta = learn_rate * (np.mat(h).T * np.mat(v0) - np.mat(h).T * np.mat(v1))
-        self.weights += delta
+        # cut off the bias prediction
+        v1 = v1[:-1]
+
+        # the following might be a bit confusing because np.mat() transforms a (7,) shaped array
+        # into a (1,7) shaped matrix, so in the following lines,
+        # a transformed (.T) matrix is actually a regular upright-standing (untransformed) vector
+        posgrad = np.mat(v0).T * np.mat(h)
+        h1 = self.function(np.dot(self.weights, np.append(v1, 1)))
+        # cut off the bias prediction
+        neggrad = np.mat(v1).T * np.mat(h1)
+
+        delta = learn_rate * (np.mat(v0).T * np.mat(h) - np.mat(v1).T * np.mat(h1))
+
+        # this is not a perfect fix i think
+        self.weights[:, :-1] += delta.T
 
         return v1
 
