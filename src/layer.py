@@ -107,7 +107,6 @@ class DenseLayer(Layer):
         if len(o) > 1:
             layers[len(o) - 1].backpropagation(layers, o, ej, target, learn_rate)
 
-    # FIXME
     def gibbs_sampling(self, v0, learn_rate):
         h = self.run(v0)
         v1 = self.function(np.dot(self.weights.T, h))
@@ -128,6 +127,10 @@ class DenseLayer(Layer):
         self.weights += delta.T
 
         return v1
+
+    def reconstruct(self, v0):
+        h = self.run(v0)
+        return self.function(np.dot(self.weights.T, h))
 
     def visualize(self):
         plt.imshow(self.weights, interpolation='nearest')
@@ -198,4 +201,8 @@ class Model:
         output = []
         for _ in range(sampling_amount):
             output = self.layers[layer_index].gibbs_sampling(input, learnrate)
+        return np.array(output)
+
+    def reconstruct(self, layer_index, input):
+        output = self.layers[layer_index].reconstruct(input)
         return np.array(output)

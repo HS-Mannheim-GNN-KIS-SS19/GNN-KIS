@@ -9,11 +9,11 @@ NUMBER_NEURONS = 10
 LEARN_RATE = 0.05
 SAMPLING_AMOUNT = 1
 
-VISUALIZE_PROGRESS_EACH_I = 1000
+VISUALIZE_PROGRESS_EACH_I = 5000
 
 model = layer.Model([
     layer.InputLayer((PICTURE_SIZE + NUMBER_NEURONS,)),
-    layer.DenseLayer((PICTURE_SIZE + NUMBER_NEURONS,), function=stochastic),
+    layer.DenseLayer((PICTURE_SIZE-600 + NUMBER_NEURONS,), function=sigmoid),
 ])
 
 
@@ -53,23 +53,28 @@ def run_restricted_boltzmann_machine():
 
     count = 0
     right = 0
+    learn = True
     for image, image_corresponding_number in zip(images, corresponding_numbers):
         target_vec = np.zeros((10,))
-        target_vec[image_corresponding_number] = 1
+        if learn:
+            target_vec[image_corresponding_number] = 1
         for i in range(len(image)):
             if image[i] > 0:
                 image[i] = 1
+            else:
+                image[i] = 0
 
-        # Doesn't do the trick here... what a surprise. Still wanted to see what happens in Backpropagation xD
-        # output = model.backpropagation(np.append(image, np.zeros((10,))), np.append(image, target_vec), 0.01)
-        output = model.gibbs_sampling(1, np.append(image, target_vec), LEARN_RATE, SAMPLING_AMOUNT)
-
+        if learn:
+            output = model.gibbs_sampling(1, np.append(image, target_vec), LEARN_RATE, SAMPLING_AMOUNT)
+        else:
+            output = model.reconstruct(1, np.append(image, target_vec))
         count += 1
 
         # Visualization
         if count % VISUALIZE_PROGRESS_EACH_I == 0:
+            learn = False
             visualize(image, image_corresponding_number, output, right, count)
-
+            count, right = 0, 0
         output_numbers = output[PICTURE_SIZE:PICTURE_SIZE + NUMBER_NEURONS]
 
         if output_numbers.tolist().index(max(output_numbers)) == image_corresponding_number:
