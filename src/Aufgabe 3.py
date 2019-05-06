@@ -1,6 +1,7 @@
 import layer
 import matplotlib.pyplot as plt
 import numpy as np
+from mlxtend.data import loadlocal_mnist
 from src.functions import *
 
 PICTURE_SIZE = 28 * 28
@@ -9,11 +10,12 @@ NUMBER_NEURONS = 10
 LEARN_RATE = 0.05
 SAMPLING_AMOUNT = 1
 
-VISUALIZE_PROGRESS_EACH_I = 5000
+VISUALIZE_PROGRESS_EACH_I = 250
+learn_for_steps = 50000
 
 model = layer.Model([
     layer.InputLayer((PICTURE_SIZE + NUMBER_NEURONS,)),
-    layer.DenseLayer((PICTURE_SIZE-600 + NUMBER_NEURONS,), function=sigmoid),
+    layer.DenseLayer((PICTURE_SIZE - 200 + NUMBER_NEURONS,), function=sigmoid),
 ])
 
 
@@ -25,11 +27,13 @@ def visualize(original_image, target_number, output, right_amount, count):
     # only the 10 extra neurons
     predicted = output[PICTURE_SIZE:PICTURE_SIZE + NUMBER_NEURONS]
 
-    plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(original_image).reshape((28, 28))))
+    plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1),
+                   np.flipud(np.array(original_image).reshape((28, 28))))
     plt.colorbar()
     plt.show()
 
-    plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1), np.flipud(np.array(pic).reshape((28, 28))))
+    plt.pcolormesh(np.arange(0, 28, 1), np.arange(0, 28, 1),
+                   np.flipud(np.array(pic).reshape((28, 28))))
     plt.colorbar()
     plt.show()
 
@@ -44,9 +48,7 @@ def visualize(original_image, target_number, output, right_amount, count):
     print("--------------")
 
 
-def run_restricted_boltzmann_machine():
-    from mlxtend.data import loadlocal_mnist
-
+def run_restricted_boltzmann_machine(visualize_while_learning, save_weights_each=0):
     images, corresponding_numbers = loadlocal_mnist(
         images_path='../trainingdata/train-images.idx3-ubyte',
         labels_path='../trainingdata/train-labels.idx1-ubyte')
@@ -65,20 +67,28 @@ def run_restricted_boltzmann_machine():
                 image[i] = 0
 
         if learn:
-            output = model.gibbs_sampling(1, np.append(image, target_vec), LEARN_RATE, SAMPLING_AMOUNT)
+            output = model.gibbs_sampling(1, np.append(
+                image, target_vec), LEARN_RATE, SAMPLING_AMOUNT)
         else:
             output = model.reconstruct(1, np.append(image, target_vec))
+
         count += 1
 
-        # Visualization
-        if count % VISUALIZE_PROGRESS_EACH_I == 0:
+        if save_weights_each > 0 and count % save_weights_each == 0:
+            model.save_to_file('bolzman')
+
+        if count == learn_for_steps:
             learn = False
+
+        # Visualization
+        if count % VISUALIZE_PROGRESS_EACH_I == 0 and visualize_while_learning:
             visualize(image, image_corresponding_number, output, right, count)
             count, right = 0, 0
+
         output_numbers = output[PICTURE_SIZE:PICTURE_SIZE + NUMBER_NEURONS]
 
         if output_numbers.tolist().index(max(output_numbers)) == image_corresponding_number:
             right += 1
 
 
-run_restricted_boltzmann_machine()
+run_restricted_boltzmann_machine(False, save_weights_each=1000)
