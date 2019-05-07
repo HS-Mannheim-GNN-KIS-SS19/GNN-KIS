@@ -1,7 +1,7 @@
 import abc
 import matplotlib.pyplot as plt
 import numpy as np
-from src.functions import *
+from functions import *
 
 # has to be at least 1
 RANDOM_WEIGHTS_STRETCH = 1

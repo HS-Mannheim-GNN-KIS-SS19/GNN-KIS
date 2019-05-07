@@ -2,7 +2,7 @@ import layer
 import matplotlib.pyplot as plt
 import numpy as np
 from mlxtend.data import loadlocal_mnist
-from src.functions import *
+from functions import *
 
 PICTURE_SIZE = 28 * 28
 NUMBER_NEURONS = 10
