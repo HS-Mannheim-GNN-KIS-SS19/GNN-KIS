@@ -37,7 +37,8 @@ class Layer:
 
 
 class DenseLayer(Layer):
-    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False, weights=None):
+    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False,
+                 weights=None):
         if len(shape) != 1:
             raise AssertionError("width.len has to be 1 was {}".format(shape.ndim))
         super().__init__(shape)
@@ -70,7 +71,8 @@ class DenseLayer(Layer):
         self.assert_output_shape(target.shape)
 
         sum = np.dot(self.weights, np.append(input, 1))
-        self.weights += -learn_rate * np.append(input, 1) * (self.function(sum) - target)  # * self.function_derivative(sum)
+        self.weights += -learn_rate * np.append(input, 1) * (
+                    self.function(sum) - target)  # * self.function_derivative(sum)
         # print(self.weights)
 
     def backpropagation(self, layers, o, ek, target, learn_rate):
@@ -80,7 +82,7 @@ class DenseLayer(Layer):
         # output vector of current layer
         oj = np.take(o, 0)
         # output matrix of all neurons
-        o = np.delete(o, 0)
+        o = o[1::]
         # oi are always the inputs with added bias neuron
         oi = np.append(o[0], 1)
 
