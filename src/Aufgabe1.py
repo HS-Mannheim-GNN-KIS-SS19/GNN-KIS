@@ -1,20 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-count = 0.2
+count = 10
 step = 0.01
-start = 0.2
+start = [-7, -0.2, 8]
 
-result = []
-x = start
-for i in range(int(count / step)):
-    result.append(x)
-    x = (x - (x * x * x)) * step
+for i in range(len(start)):
+    result = []
+    x = start[i]
+    for i in range(int(count / step)):
+        result.append(x)
+        x += (x - (x * x * x)) * step
 
-fig, ax = plt.subplots()
-ax.plot(np.arange(0, count, step), np.array(result))
+    fig, ax = plt.subplots()
+    ax.plot(np.arange(0, count, step), np.array(result))
 
-ax.set(xlabel='x', ylabel='y', title="start: {}".format(start))
-ax.grid()
+    ax.set(xlabel='x', ylabel='y', title="start: {}".format(start))
+    ax.grid()
 
-plt.show()
+    plt.show()
