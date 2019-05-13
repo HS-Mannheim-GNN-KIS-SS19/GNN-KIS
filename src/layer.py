@@ -37,7 +37,8 @@ class Layer:
 
 
 class DenseLayer(Layer):
-    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False, weights=None):
+    def __init__(self, shape, function=sigmoid, function_derivative=sigmoid_derivative, fixed_values=False,
+                 weights=None):
         if len(shape) != 1:
             raise AssertionError("width.len has to be 1 was {}".format(shape.ndim))
         super().__init__(shape)
@@ -70,7 +71,8 @@ class DenseLayer(Layer):
         self.assert_output_shape(target.shape)
 
         sum = np.dot(self.weights, np.append(input, 1))
-        self.weights += -learn_rate * np.append(input, 1) * (self.function(sum) - target)  # * self.function_derivative(sum)
+        self.weights += -learn_rate * np.append(input, 1) * (
+                self.function(sum) - target)  # * self.function_derivative(sum)
         # print(self.weights)
 
     def backpropagation(self, layers, o, ek, target, learn_rate):
@@ -142,13 +144,18 @@ class Model:
 
     def save_to_file(self, filename_prefix):
         for i, layer in enumerate(self.layers):
-            if isinstance(layer, DenseLayer):
+            if isinstance(layer, DenseLayer) or isinstance(layer, RecurrentLayer):
                 np.savetxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz', layer.weights)
 
     def restore_from_file(self, filename_prefix):
         # starts at 1 because layer 0 is the input layer which has no weights
         for i in range(1, len(self.layers)):
-            self.layers[i].weights = np.loadtxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz')
+            weights = np.loadtxt('../saves/' + filename_prefix + '_layer' + str(i) + '.gz')
+            if self.layers[i].weights.shape == weights.shape:
+                self.layers[i].weights = weights
+            else:
+                raise AssertionError(
+                    "Error loading weights: Incompatible Shapes {} and {}".format(self.layers[i].weights, weights))
 
     def delta_learning(self, layer_id, input, target, learn_rate):
         curr_state = input
@@ -164,3 +171,42 @@ class Model:
             cur = output[0]
         self.layers[- 1].backpropagation(self.layers, np.array(output), None, target, learn_rate)
         return np.array(output)[0]
+
+
+class RecurrentLayer(Layer):
+
+    def __init__(self, size, start_values, weights=None):
+        super().__init__(size)
+        self._model = Model([
+            InputLayer((size,)),
+            DenseLayer((size,),
+                       weights=weights
+                       ),
+        ])
+        self.state = start_values
+        self.weights = self._model.layers[1].weights
+
+    def run_times(self, i, print_flag=False, zfill=2):
+        if print_flag:
+            print("{}: {}".format(str(0).zfill(zfill), self.state))
+        for t in range(i):
+            self.run()
+            if print_flag:
+                print("{}: {}".format(str(t + 1).zfill(zfill), self.state))
+        return self.state
+
+    def run(self, new_state=None):
+        if new_state is None:
+            self.state = self._model.run(self.state)
+        else:
+            self.state = self._model.run(new_state)
+        return self.state
+
+    def visualize(self):
+        self._model.visualize(1)
+
+    def save_to_file(self, filename_prefix):
+        self._model.save_to_file(filename_prefix)
+
+    def restore_from_file(self, filename_prefix):
+        self._model.restore_from_file(filename_prefix)
