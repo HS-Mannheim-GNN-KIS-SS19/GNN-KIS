@@ -175,24 +175,27 @@ class Model:
 
 class RecurrentLayer(Layer):
 
-    def __init__(self, size, start_values, weights=None):
+    def __init__(self, size, start_values, weights=None, function=sigmoid):
         super().__init__(size)
         self._model = Model([
             InputLayer((size,)),
             DenseLayer((size,),
+                       function=function,
                        weights=weights
                        ),
         ])
         self.state = start_values
         self.weights = self._model.layers[1].weights
 
-    def run_times(self, i, print_flag=False, zfill=2):
+    def run_times(self, i, print_flag=False, zfill=2, output=None):
         if print_flag:
             print("{}: {}".format(str(0).zfill(zfill), self.state))
         for t in range(i):
             self.run()
             if print_flag:
                 print("{}: {}".format(str(t + 1).zfill(zfill), self.state))
+            if output is not None:
+                output(self.state)
         return self.state
 
     def run(self, new_state=None):
