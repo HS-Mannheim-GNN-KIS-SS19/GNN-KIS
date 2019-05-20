@@ -10,7 +10,7 @@ NUMBER_NEURONS = 10
 LEARN_RATE = 0.05
 SAMPLING_AMOUNT = 1
 
-VISUALIZE_PROGRESS_EACH_I = 250
+VISUALIZE_PROGRESS_EACH_I = 500
 learn_for_steps = 50000
 
 model = layer.Model([
@@ -43,8 +43,8 @@ def visualize(original_image, target_number, output, right_amount, count):
 
     print("Predicted:  {}   Expected:  {} for this picture".format(predicted.tolist().index(max(predicted)),
                                                                    target_number))
-    print("recognized {}% correctly in the last {} pictures".format((right_amount / count) * 100,
-                                                                    VISUALIZE_PROGRESS_EACH_I))
+    print("recognized {:1.2f}% correctly in the last {} pictures".format((right_amount / count) * 100,
+                                                                         VISUALIZE_PROGRESS_EACH_I))
     print("--------------")
 
 
@@ -91,4 +91,4 @@ def run_restricted_boltzmann_machine(visualize_while_learning, save_weights_each
             right += 1
 
 
-run_restricted_boltzmann_machine(False, save_weights_each=1000)
+run_restricted_boltzmann_machine(True, save_weights_each=0)
