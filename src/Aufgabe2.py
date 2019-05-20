@@ -22,7 +22,7 @@ def delta_learning():
                 model.delta_learning(2, np.array([x, y]), np.array([0.8 if sqrt(x * x + y * y) < 1 else 0]), 0.05)
 
 
-def backpropagation(i):
+def backpropagation(i, lr=0.05):
     count = 0
     while True:
         if count == i:
@@ -33,9 +33,9 @@ def backpropagation(i):
         # train
         for x in np.arange(-2, 2, 0.05):
             for y in np.arange(-2, 2, 0.05):
-                model.backpropagation(np.array([x, y]), np.array([0.8 if sqrt(x * x + y * y) < 1 else 0]), 0.05)
+                model.backpropagation(np.array([x, y]), np.array([0.8 if sqrt(x * x + y * y) < 1 else 0]), lr)
 
         count += 1
 
 
-backpropagation(8)
+backpropagation(8, lr=0.05)
