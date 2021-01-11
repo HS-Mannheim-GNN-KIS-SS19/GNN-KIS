@@ -49,7 +49,7 @@
       </profile-state>
     </entry>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" default="false" project-jdk-name="Python 3.6 (GNN-KIS)" project-jdk-type="Python SDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" default="false" project-jdk-name="Python 3.6 virtualenv at ~/workspace/studium/GNN-KIS/GNN-KIS/venv" project-jdk-type="Python SDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="SuppressionsComponent">

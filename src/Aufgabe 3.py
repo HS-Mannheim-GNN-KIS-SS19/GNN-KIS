@@ -1,7 +1,7 @@
-import layer
 import matplotlib.pyplot as plt
-import numpy as np
 from mlxtend.data import loadlocal_mnist
+
+import layer
 from functions import *
 
 PICTURE_SIZE = 28 * 28
@@ -11,7 +11,7 @@ LEARN_RATE = 0.05
 SAMPLING_AMOUNT = 1
 
 VISUALIZE_PROGRESS_EACH_I = 500
-learn_for_steps = 50000
+learn_for_steps = 5000
 
 model = layer.Model([
     layer.InputLayer((PICTURE_SIZE + NUMBER_NEURONS,)),
